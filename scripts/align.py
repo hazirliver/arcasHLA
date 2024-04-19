@@ -26,7 +26,7 @@ import json
 import pickle
 import subprocess
 import sys
-from collections import defaultdict
+from collections import defaultdict, deque
 
 import numpy as np
 
@@ -48,23 +48,27 @@ rootDir = os.path.dirname(os.path.realpath(__file__)) + "/../"
 # -----------------------------------------------------------------------------
 # Process and align FASTQ input
 # -----------------------------------------------------------------------------
-def get_read_lengths(fqs):
+def get_read_lengths(fqs, chunk_size=1024 * 1024):
+    """Get read lengths from FASTQ files efficiently by processing data in chunks using deque."""
     awk_cmd = "awk '{if(NR%4==2) print length($1)}'"
-    read_lengths = []
+    read_lengths = deque()
 
     for fq in fqs:
-        if fq.endswith(".gz"):
-            cat_cmd = "zcat"
+        if fq.endswith('.gz'):
+            cat_cmd = 'zcat'
         else:
-            cat_cmd = "cat"
+            cat_cmd = 'cat'
 
         # Constructing the command
         cmd = f"{cat_cmd} {fq} | {awk_cmd}"
 
-        # Execute the command and capture output
-        with subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, text=True) as proc:
-            for line in proc.stdout:
-                read_lengths.append(int(line.strip()))
+        # Execute the command and process output in chunks
+        with subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, text=True, bufsize=chunk_size) as proc:
+            while True:
+                lines = proc.stdout.readlines(chunk_size)
+                if not lines:
+                    break
+                read_lengths.extend(int(line.strip()) for line in lines if line.strip())
 
     return np.array(read_lengths)
 
