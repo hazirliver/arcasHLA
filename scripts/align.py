@@ -48,7 +48,7 @@ rootDir = os.path.dirname(os.path.realpath(__file__)) + "/../"
 # -----------------------------------------------------------------------------
 # Process and align FASTQ input
 # -----------------------------------------------------------------------------
-def get_read_lengths(fqs, chunk_size=1024 * 1024):
+def get_read_lengths(fqs, chunk_size=500 * 1024 * 1024):
     """Get read lengths from FASTQ files efficiently by processing data in chunks using deque."""
     awk_cmd = "awk '{if(NR%4==2) print length($1)}'"
     read_lengths = deque()
