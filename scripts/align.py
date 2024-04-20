@@ -73,7 +73,7 @@ def get_read_lengths(fqs, chunk_size=500 * 1024 * 1024):
 
     return np.array(read_lengths)
 
-def get_read_length_for_file(fq, chunk_size=700*1024*1024):  # Using 200 MB chunk size
+def get_read_length_for_file(fq, chunk_size=500*1024*1024):  # Using 500 MB chunk size
     """Process a single FASTQ file to extract read lengths using shell commands."""
     awk_cmd = "awk '{if(NR%4==2) print length($1)}'"
     cat_cmd = 'zcat' if fq.endswith('.gz') else 'cat'
