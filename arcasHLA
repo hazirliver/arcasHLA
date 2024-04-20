@@ -36,6 +36,10 @@ if [ ! -x "$(command -v python3 -c "import numpy")" ]; then
     echo "Warning: missing dependency - python3 module NumPy"
 fi
 
+if [ ! -x "$(command -v python3 -c "import joblib")" ]; then
+    echo "Warning: missing dependency - python3 module joblib"
+fi
+
 if [ ! -x "$(command -v python3 -c "import pandas")" ]; then
     echo "Warning: missing dependency - python3 module pandas"
 fi

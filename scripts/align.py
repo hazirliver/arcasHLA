@@ -78,6 +78,7 @@ def get_read_length_for_file(fq, chunk_size=700*1024*1024):  # Using 200 MB chun
     awk_cmd = "awk '{if(NR%4==2) print length($1)}'"
     cat_cmd = 'zcat' if fq.endswith('.gz') else 'cat'
     cmd = f"{cat_cmd} {fq} | {awk_cmd}"
+    print(f"{cmd=}")
     read_lengths = deque()
 
     # Execute the command and process output in chunks
@@ -87,13 +88,14 @@ def get_read_length_for_file(fq, chunk_size=700*1024*1024):  # Using 200 MB chun
             if not lines:
                 break
             read_lengths.extend(int(line.strip()) for line in lines if line.strip())
-
+    print(f"{len(read_lengths)=}")
     return np.array(read_lengths)
 
 
 def parallel_get_read_lengths(fqs):
     """Use parallel processing to get read lengths from multiple FASTQ files."""
     num_jobs = len(fqs)
+    print(f"{num_jobs=}")
     results = Parallel(n_jobs=num_jobs)(delayed(get_read_length_for_file)(fq) for fq in fqs)
     read_lengths = np.concatenate(results)
     return read_lengths
