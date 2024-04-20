@@ -27,6 +27,7 @@ import pickle
 import subprocess
 import sys
 from collections import defaultdict, deque
+from joblib import Parallel, delayed
 
 import numpy as np
 
@@ -72,13 +73,39 @@ def get_read_lengths(fqs, chunk_size=500 * 1024 * 1024):
 
     return np.array(read_lengths)
 
+def get_read_length_for_file(fq, chunk_size=700*1024*1024):  # Using 200 MB chunk size
+    """Process a single FASTQ file to extract read lengths using shell commands."""
+    awk_cmd = "awk '{if(NR%4==2) print length($1)}'"
+    cat_cmd = 'zcat' if fq.endswith('.gz') else 'cat'
+    cmd = f"{cat_cmd} {fq} | {awk_cmd}"
+    read_lengths = deque()
+
+    # Execute the command and process output in chunks
+    with subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, text=True, bufsize=chunk_size) as proc:
+        while True:
+            lines = proc.stdout.readlines(chunk_size)
+            if not lines:
+                break
+            read_lengths.extend(int(line.strip()) for line in lines if line.strip())
+
+    return np.array(read_lengths)
+
+
+def parallel_get_read_lengths(fqs):
+    """Use parallel processing to get read lengths from multiple FASTQ files."""
+    num_jobs = len(fqs)
+    results = Parallel(n_jobs=num_jobs)(delayed(get_read_length_for_file)(fq) for fq in fqs)
+    read_lengths = np.concatenate(results)
+    return read_lengths
+
 
 def pseudoalign(fqs, sample, paired, reference, outdir, temp, threads, avg, std):
     """Calls Kallisto to pseudoalign reads."""
 
     log.info("[alignment] Analyzing read length")
 
-    read_lengths = get_read_lengths(fqs)
+    #read_lengths = get_read_lengths(fqs)
+    read_lengths = parallel_get_read_lengths(fqs, num_jobs=4)
 
     if len(read_lengths) == 0:
         sys.exit("[genotype] Error: FASTQ files are empty; check arcasHLA extract for issues.")
