@@ -106,8 +106,8 @@ def pseudoalign(fqs, sample, paired, reference, outdir, temp, threads, avg, std)
 
     log.info("[alignment] Analyzing read length")
 
-    #read_lengths = get_read_lengths(fqs)
-    read_lengths = parallel_get_read_lengths(fqs)
+    read_lengths = get_read_lengths(fqs)
+    #read_lengths = parallel_get_read_lengths(fqs)
 
     if len(read_lengths) == 0:
         sys.exit("[genotype] Error: FASTQ files are empty; check arcasHLA extract for issues.")
