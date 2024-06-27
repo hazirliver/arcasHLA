@@ -38,7 +38,6 @@ __date__ = "2022-01-27"
 
 def process_allele(allele, n, keep_alpha=True):
     """Lowers allele resolution to n-fields."""
-    temp = []
     alpha = False
     fields = allele.split(":")
 
@@ -50,7 +49,8 @@ def process_allele(allele, n, keep_alpha=True):
     out = fields[:n]
     out = ":".join(out)
 
-    if alpha: out += alpha
+    if alpha:
+        out += alpha
     return out
 
 
@@ -74,7 +74,7 @@ def remove_files(files, keep_files):
     if keep_files:
         return
 
-    if type(files) == list:
+    if isinstance(files, list):
         for file in files:
             run_command(["rm -rf", file])
     else:
@@ -83,11 +83,11 @@ def remove_files(files, keep_files):
 
 def run_command(command, message=""):
     """Outputs message and command to log, runs command and returns output."""
-    if type(command) == list:
+    if isinstance(command, list):
         command = " ".join(command)
 
     if message:
-        log.info("".join([message, "\n\n\t", command, "\n"]))
+        log.info(f"{message}\n\n\t{command}\n")
 
     output = run(command, shell=True, stdout=PIPE, stderr=PIPE, check=False)
 
