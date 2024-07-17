@@ -27,7 +27,7 @@ if __name__ == "__main__":
     parser.add_argument("-b", "--branch", default="master", help="Git branch name to clone repo")
     parser.add_argument("-i", "--image", default="osrp")
     parser.add_argument("-bo", "--build-only", action="store_true")
-    parser.add_argument("-t", "--tag", default="osrp_arcashla_cwl-0.1.3-arcas-v2.26.0")
+    parser.add_argument("-t", "--tag", default="osrp_arcashla_cwl-0.1.3-bam-input")
     parser.add_argument("-f", "--dockerfile", default="Dockerfile", help="Name of the Dockerfile to use")
     args = parser.parse_args()
 

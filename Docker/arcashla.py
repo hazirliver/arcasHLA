@@ -5,10 +5,19 @@ import subprocess
 import sys
 
 
+def print_directory_contents(path):
+    for root, dirs, files in os.walk(path):
+        level = root.replace(path, "").count(os.sep)
+        indent = " " * 4 * (level)
+        print("{}{}/".format(indent, os.path.basename(root)))
+        subindent = " " * 4 * (level + 1)
+        for f in files:
+            print("{}{}".format(subindent, f))
+
+
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Wrapper for arcasHLA genotype.")
-    parser.add_argument("fastq1", type=str, help="Path to fastq file (single-end) or first fastq file (paired-end 1).")
-    parser.add_argument("--fastq2", type=str, default=None, help="Path to second fastq file (paired-end 2), optional.")
+    parser.add_argument("bam", type=str, help="Path to bam file.")
     parser.add_argument("--genes", nargs="+",
                         default=["A", "B", "C", "DMA", "DMB", "DOA", "DOB", "DPA1", "DPB1", "DQA1", "DQB1", "DRA",
                                  "DRB1", "DRB3", "DRB5", "E", "F", "G", "H", "J", "K", "L"],
@@ -27,13 +36,32 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def ensure_fastq_extension(filepath):
-    if not filepath.endswith(".fastq.gz"):
-        return f"{filepath}.fastq.gz"
+def ensure_bam_extension(filepath):
+    if not filepath.endswith(".bam"):
+        return f"{filepath}.bam"
     return filepath
 
 
-def build_command(args):
+def build_command_extract(args):
+    command = ["arcasHLA", "extract"]
+    command += ["--threads", str(args.threads),
+                "--outdir", "/outputs/results/",
+                "--log", "/outputs/results/sample.extract.log",
+                "--verbose"]
+
+    # Ensure the fastq files have the correct extension
+    bam = ensure_bam_extension(args.bam)
+    command.append(bam)
+
+    return command
+
+
+def get_extracted_fastq(bam) -> tuple[str, str]:
+    filename = bam.split(".")[-2]
+    return f"/outputs/results/{filename}.extracted.1.fastq.gz", f"/outputs/results/{filename}.extracted.2.fastq.gz"
+
+
+def build_command_genotype(args):
     command = ["arcasHLA", "genotype"]
     genes = ",".join(args.genes)
     command += ["--genes", genes]
@@ -48,28 +76,37 @@ def build_command(args):
                 "--threads", str(args.threads)]
 
     # Ensure the fastq files have the correct extension
-    fastq1 = ensure_fastq_extension(args.fastq1)
-    command.append(fastq1)
-
-    if args.fastq2:
-        # Paired-end
-        fastq2 = ensure_fastq_extension(args.fastq2)
-        command.append(fastq2)
-    else:
-        # Single-end
-        command += ["--single", "--avg", str(args.avg), "--std", str(args.std)]
+    fq1, fq2 = get_extracted_fastq(args.bam)
+    command.append([fq1, fq2])
 
     return command
 
 
 def execute_command(command):
     try:
+        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
+        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
+        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
+        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
+        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
+        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
+        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
+
         print(f"Start executing ArcasHLA with command: \n{' '.join(command)}")
         result = subprocess.run(command, shell=False, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                 text=True)
         print(result.stdout)
         if result.stderr:
             print(f"Stderr: {result.stderr}", file=sys.stderr)
+
+        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
+        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
+        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
+        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
+        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
+        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
+        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
+
     except subprocess.CalledProcessError as e:
         print(f"Error executing arcasHLA: {e}", file=sys.stderr)
         sys.exit(1)
@@ -91,14 +128,28 @@ def rename_output_files(output_dir):
             print(f"Renamed {filename} to {new_name}")
 
 
+def build_command_version(args):
+    return ["samtools", "--version"]
+
+
 def main():
+    print("Contents of '/inputs' folder:")
+    print_directory_contents("/inputs")
+    os.makedirs("/outputs/results/", exist_ok=True)
     args = parse_arguments()
     # Adjust drop_iterations based on library layout
-    if args.fastq2:
-        # Paired-end, adjust if needed based on paired-end specific settings
-        args.drop_iterations = 10  # Example adjustment, modify as needed
-    command = build_command(args)
-    execute_command(command)
+
+    command_index = build_command_version(args)
+    execute_command(command_index)
+
+    command_extract = build_command_extract(args)
+    execute_command(command_extract)
+
+    print_directory_contents("/outputs/results/")
+
+    command_genotype = build_command_genotype(args)
+    execute_command(command_genotype)
+
     rename_output_files("/outputs/results/")
 
 

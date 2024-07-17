@@ -11,13 +11,17 @@ RUN apt-get update && \
 
 USER $MAMBA_USER
 # Clone the specific repository
-ARG build_date
+#ARG build_date
 RUN git clone https://github.com/hazirliver/arcasHLA.git
 
 #COPY --chown=$MAMBA_USER:$MAMBA_USER mamba_env/env.yml /tmp/env.yml
-
+COPY environment.yml /app/arcasHLA/environment.yml
 RUN micromamba install -y -n base -f /app/arcasHLA/environment.yml && \
     micromamba clean --all --yes
+
+# Install samtools
+#RUN micromamba install -y -n base -c bioconda samtools && \
+#    micromamba clean --all --yes
 
 #RUN mkdir /root/app
 
@@ -59,7 +63,6 @@ USER $MAMBA_USER
 # Copy the arcashla.py script into the container
 COPY arcashla.py /app/arcasHLA/arcashla.py
 COPY entry.sh /app/entry.sh
-
 
 # Set the entrypoint to use the conda environment and run the script
 ENTRYPOINT ["stdbuf", "-i0", "-o0", "-e0", "/bin/bash", "/app/entry.sh"]
