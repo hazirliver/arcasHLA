@@ -57,8 +57,8 @@ def build_command_extract(args):
 
 
 def get_extracted_fastq(bam) -> tuple[str, str]:
-    filename = bam.split(".")[-2]
-    return f"/outputs/results/{filename}.extracted.1.fastq.gz", f"/outputs/results/{filename}.extracted.2.fastq.gz"
+    filename = bam.split(".")[-2].split("/")[-1]
+    return f"/outputs/results/{filename}.extracted.1.fq.gz", f"/outputs/results/{filename}.extracted.2.fq.gz"
 
 
 def build_command_genotype(args):
@@ -77,35 +77,22 @@ def build_command_genotype(args):
 
     # Ensure the fastq files have the correct extension
     fq1, fq2 = get_extracted_fastq(args.bam)
-    command.append([fq1, fq2])
+    command.append(fq1)
+    command.append(fq2)
 
     return command
 
 
 def execute_command(command):
     try:
-        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
-        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
-        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
-        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
-        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
-        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
-        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
 
-        print(f"Start executing ArcasHLA with command: \n{' '.join(command)}")
+        print(f"Start executing with command: \n{' '.join(command)}")
         result = subprocess.run(command, shell=False, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                 text=True)
         print(result.stdout)
         if result.stderr:
             print(f"Stderr: {result.stderr}", file=sys.stderr)
 
-        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
-        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
-        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
-        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
-        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
-        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
-        print("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ")
 
     except subprocess.CalledProcessError as e:
         print(f"Error executing arcasHLA: {e}", file=sys.stderr)
@@ -132,6 +119,14 @@ def build_command_version(args):
     return ["samtools", "--version"]
 
 
+def build_command_cp2tmp(args):
+    os.makedirs("/tmp/bam_file/", exist_ok=True)
+    fname = args.bam.split("/")[-1]
+    command = ["cp", args.bam, f"/tmp/bam_file/{fname}"]
+    args.bam = f"/tmp/bam_file/{fname}"
+    return command
+
+
 def main():
     print("Contents of '/inputs' folder:")
     print_directory_contents("/inputs")
@@ -139,8 +134,11 @@ def main():
     args = parse_arguments()
     # Adjust drop_iterations based on library layout
 
-    command_index = build_command_version(args)
-    execute_command(command_index)
+    command_cp2tmp = build_command_cp2tmp(args)
+    execute_command(command_cp2tmp)
+
+    # command_index = build_command_version(args)
+    # execute_command(command_index)
 
     command_extract = build_command_extract(args)
     execute_command(command_extract)
