@@ -1,0 +1,12 @@
+bam_file:
+  class: File
+  location: s3://ldt-validation/<run_name>/<sample_name>/output/RNA-tumor.bam
+__outputs__:
+  alignment_output: s3://bostongene-deconv-oss-rnaseq/tmp/<dataset_name>/<sample_name>/<file_name>.alignment.p
+  genes_output: s3://bostongene-deconv-oss-rnaseq/tmp/<dataset_name>/<sample_name>/<file_name>.genes.json
+  genotype_json_output: s3://bostongene-deconv-oss-rnaseq/tmp/<dataset_name>/<sample_name>/<file_name>.genotype.json
+  genotype_log_output: s3://bostongene-deconv-oss-rnaseq/tmp/<dataset_name>/<sample_name>/<file_name>.genotype.log
+  sample_extract_log: s3://bostongene-deconv-oss-rnaseq/tmp/<dataset_name>/<sample_name>/sample.extract.log
+  stdout_log: s3://bostongene-deconv-oss-rnaseq/tmp/<dataset_name>/<sample_name>/<file_name>.stdout.log
+  stderr_log: s3://bostongene-deconv-oss-rnaseq/tmp/<dataset_name>/<sample_name>/<file_name>.stderr.log
+

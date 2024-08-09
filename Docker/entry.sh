@@ -23,6 +23,7 @@ echo "$@" >> "${OUTDIR}/logs/cmdline.log"
 echo "$*" >> "${OUTDIR}/logs/cmdline_ast.log"
 proctype=$(cat /proc/cpuinfo)
 meminfo=$(cat /proc/meminfo)
+
 echo "Launching entrypoint script on a machine with the following capabilities: ${proctype} ${meminfo}" | tee -a "${OUTDIR}/logs/machine.log"
 echo "Launching Python script passing it all arguments"
 ( (/opt/conda/bin/python /app/arcasHLA/arcashla.py "$@" | tee -a "${OUTDIR}/logs/stdout.log" ) 3>&1 1>&2 2>&3 | tee -a "${OUTDIR}/logs/stderr.log" ) #&> all.log

@@ -1,0 +1,44 @@
+cwlVersion: v1.2
+class: CommandLineTool
+id: arcashla
+doc: Runs ArcasHLA for genotyping from paired-end sequence data.
+
+inputs:
+  - id: read_single
+    type: File
+    inputBinding:
+      position: 1
+outputs:
+  - id: alignment_output
+    type: File
+    outputBinding:
+      glob: results/*.alignment.p
+  - id: genes_output
+    type: File
+    outputBinding:
+      glob: results/*.genes.json
+  - id: genotype_json_output
+    type: File
+    outputBinding:
+      glob: results/*.genotype.json
+  - id: genotype_log_output
+    type: File
+    outputBinding:
+      glob: results/*.genotype.log
+  - id: stdout_log
+    type: File
+    outputBinding:
+      glob: logs/stdout.log
+  - id: stderr_log
+    type: File
+    outputBinding:
+      glob: logs/stderr.log
+requirements:
+  - class: DockerRequirement
+    dockerPull: 028257207274.dkr.ecr.us-east-1.amazonaws.com/deconv/osrp:osrp_arcashla_cwl-0.1.3
+  - class: ResourceRequirement
+    coresMin: 8
+    ramMin: 32000
+    tmpdirMin: 100000
+  - class: ToolTimeLimit
+    timelimit: 21600

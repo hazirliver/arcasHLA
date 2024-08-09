@@ -15,7 +15,7 @@ USER $MAMBA_USER
 RUN git clone https://github.com/hazirliver/arcasHLA.git
 
 #COPY --chown=$MAMBA_USER:$MAMBA_USER mamba_env/env.yml /tmp/env.yml
-COPY environment.yml /app/arcasHLA/environment.yml
+#COPY environment.yml /app/arcasHLA/environment.yml
 RUN micromamba install -y -n base -f /app/arcasHLA/environment.yml && \
     micromamba clean --all --yes
 
@@ -65,4 +65,4 @@ COPY arcashla.py /app/arcasHLA/arcashla.py
 COPY entry.sh /app/entry.sh
 
 # Set the entrypoint to use the conda environment and run the script
-ENTRYPOINT ["stdbuf", "-i0", "-o0", "-e0", "/bin/bash", "/app/entry.sh"]
+ENTRYPOINT ["/usr/local/bin/_entrypoint.sh", "stdbuf", "-i0", "-o0", "-e0", "/bin/bash", "/app/entry.sh"]

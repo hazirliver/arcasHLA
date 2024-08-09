@@ -1,0 +1,13 @@
+read1:
+  class: File
+  location: s3://bostongene-deconv-oss-rnaseq/downloads/<identifier>_1.fastq.gz
+read2:
+  class: File
+  location: s3://bostongene-deconv-oss-rnaseq/downloads/<identifier>_2.fastq.gz
+__outputs__:
+  alignment_output: s3://bostongene-deconv-oss-rnaseq/database/<identifier>/arcashla/<identifier>.alignment.p
+  genes_output: s3://bostongene-deconv-oss-rnaseq/database/<identifier>/arcashla/<identifier>.genes.json
+  genotype_json_output: s3://bostongene-deconv-oss-rnaseq/database/<identifier>/arcashla/<identifier>.genotype.json
+  genotype_log_output: s3://bostongene-deconv-oss-rnaseq/database/<identifier>/arcashla/<identifier>.genotype.log
+
+
